@@ -1,8 +1,9 @@
 # SCM
 Challenge entrevista SCM Latam
 
-# Instrucciones para su uso
+## Instrucciones para su uso
 Es necesario tener instalado el driver ODBC https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver16
+Esta API se conecta a la base de datos de SQL Server Express mediante la autenticacion de Windows, por eso no se utilizan credenciales por el momento.
 
 * Clonar el repositorio en el ambiente de desarrollo
 * En SQL Server Express, ejecutar la query presente en init.sql
