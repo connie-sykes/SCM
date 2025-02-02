@@ -1,0 +1,7 @@
+fastapi
+sqlmodel
+uvicorn
+pyodbc
+pandas
+openpyxl
+python-multipart
