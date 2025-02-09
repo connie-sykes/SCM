@@ -9,7 +9,7 @@ Esta API se conecta a la base de datos de SQL Server Express mediante la autenti
 * Clonar el repositorio en el ambiente de desarrollo
 * En SQL Server Express, ejecutar la query presente en init.sql
 * Vuelta en el ambiente, en una terminar cmd ejecutar un ambiente virtual de python (python -m venv nombre-venv)
-* Ejecutar nombre-venv/Scripts/Activate
+* Ejecutar source nombre-venv/Scripts/Activate
 * Ejecutar pip install -r requirements.txt
 
 Ya con las librerias cargadas, en el ambiente virtual ejecutar uvicorn main:app --reload y acceder a la direccion señalada.
