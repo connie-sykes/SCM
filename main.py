@@ -29,9 +29,9 @@ def root():
 
 #Añadir datos en BDD
 @app.post("/upload-excel", tags=["File"])
-async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_session)):
+async def upload_excel(db: Session = Depends(get_session), file: UploadFile = File(...)):
     try:
-        db_file = await db_upload_excel(file, db)
+        db_file = await db_upload_excel(db,file)
     except NotFoundError as e:
         raise HTTPException(status_code=404) from e
     

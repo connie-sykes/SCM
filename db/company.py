@@ -18,12 +18,12 @@ class CompanyDelete(BaseModel):
     id: int
 
 #Obtener todas las compañias
-def db_get_company(db: Session = Depends(get_session)):
+def db_get_company(db: Session):
     statement = db.exec(select(Company)).all()
     return statement
 
 #Agregar una compañia
-def db_create_company(company: CompanyCreate, db: Session = Depends(get_session)):
+def db_create_company(company: CompanyCreate, db: Session):
     statement = Company(**company.dict())
     db.add(statement)
     db.commit()
@@ -31,7 +31,7 @@ def db_create_company(company: CompanyCreate, db: Session = Depends(get_session)
     return statement
 
 #Actualizar una compañia segun id
-def db_update_company(id:int, company: CompanyUpdate, db: Session = Depends(get_session)):
+def db_update_company(id:int, company: CompanyUpdate, db: Session):
     statement = db.get(Company,id)
     if not statement:
         raise HTTPException(status_code=404, detail="statement not found")
@@ -44,7 +44,7 @@ def db_update_company(id:int, company: CompanyUpdate, db: Session = Depends(get_
     return statement
 
 #Eliminar una compañia segun id
-def db_delete_company(id: int, db: Session = Depends(get_session)):
+def db_delete_company(id: int, db: Session):
     statement = db.get(Company, id)
     if not statement:
         raise HTTPException(status_code=404, detail="Flow State not found")

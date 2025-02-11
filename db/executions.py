@@ -65,7 +65,7 @@ class ExecutionCompanyFlow(BaseModel):
     estado: str
 
 #Agregar una ejecucion
-def db_create_executions(Info: ExecutionCreate, db: Session = Depends(get_session)):
+def db_create_executions(Info: ExecutionCreate, db: Session):
     db_execution = Executions(**Info.dict())
     db.add(db_execution)
     db.commit()
@@ -73,12 +73,12 @@ def db_create_executions(Info: ExecutionCreate, db: Session = Depends(get_sessio
     return db_execution
 
 #Obtener todas las ejecuciones
-def db_get_executions(db: Session = Depends(get_session)):
+def db_get_executions(db: Session):
     statement = db.exec(select(Executions)).all()
     return statement
 
 #Obtener ranking de ejecuciones finalizadas segun compañia
-def db_ranking_executions(db: Session = Depends(get_session)):
+def db_ranking_executions(db: Session):
     statement = (
         select(Company.nombre.label("Nombre_empresa"),func.count(Executions.estado).label("Ejecuciones_finalizadas"))
         .join(Company, Company.id == Executions.company_id)
@@ -94,9 +94,9 @@ def db_ranking_executions(db: Session = Depends(get_session)):
     return rankings
 
 #Obtener duracion promedio de ejecuciones por empresa
-def db_average_executions(db: Session = Depends(get_session)):
+def db_average_executions(db: Session):
     statement = (
-        select(Company.nombre.label("Nombre_empresa"), func.abs(func.avg(func.datediff(text('Second'), Executions.fecha_termino, Executions.fecha_creacion))).label("Duracion"))
+        select(Company.nombre.label("Nombre_empresa"), func.avg(func.abs(func.datediff(text('Second'), Executions.fecha_termino, Executions.fecha_creacion))).label("Duracion"))
         .join(Company, Company.id == Executions.company_id)
         .where(Executions.fecha_termino.isnot(None))
         .group_by(Company.id, Company.nombre)
@@ -110,7 +110,7 @@ def db_average_executions(db: Session = Depends(get_session)):
     return durations
 
 #Obtener ejecuciones segun flow_state
-def db_executions_flow_state(flowid: int, db: Session = Depends(get_session)):
+def db_executions_flow_state(flowid: int, db: Session):
     statement = (
         select(Company.nombre.label("Nombre_empresa"),Executions, Flow_states)
         .join(Company, Company.id == Executions.company_id)
@@ -132,7 +132,7 @@ def db_executions_flow_state(flowid: int, db: Session = Depends(get_session)):
     return exec_flow_state
 
 #Obtener todas las ejecuciones de una compañia
-def db_executions_company(companyid: int, db: Session = Depends(get_session)):
+def db_executions_company(companyid: int, db: Session):
     statement = (
         select(Company.nombre.label("Nombre_empresa"),Executions, Flow_states)
         .join(Company, Company.id == Executions.company_id)
@@ -156,7 +156,7 @@ def db_executions_company(companyid: int, db: Session = Depends(get_session)):
 
 
 #Obtener todas las ejecuciones de una compañia con algun flow_state status
-def db_executions_company_status(companyid: int, flowid: int, db: Session = Depends(get_session)):
+def db_executions_company_status(companyid: int, flowid: int, db: Session):
     statement = (
         select(Company.nombre.label("Nombre_empresa"),Executions, Flow_states)
         .join(Company, Company.id == Executions.company_id)
@@ -181,7 +181,7 @@ def db_executions_company_status(companyid: int, flowid: int, db: Session = Depe
 
 
 #Eliminar una ejecucion segun id
-def db_delete_executions(id: int, db: Session = Depends(get_session)):
+def db_delete_executions(id: int, db: Session):
     execution = db.get(Executions, id)
     if not execution:
         raise HTTPException(status_code=404, detail="Execution not found")
@@ -190,7 +190,7 @@ def db_delete_executions(id: int, db: Session = Depends(get_session)):
     return {"message":f"Execution {id} eliminada correctamente"}
 
 #Actualizar una ejecucion segun id
-def db_update_executions(id: int, Info: ExecutionUpdate, db: Session = Depends(get_session)):
+def db_update_executions(id: int, Info: ExecutionUpdate, db: Session):
     execution = db.get(Executions,id)
     if not execution:
         raise HTTPException(status_code=404, detail="Execution not found")

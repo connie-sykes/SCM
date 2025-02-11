@@ -1,19 +1,27 @@
-from pydantic import BaseModel
-from sqlmodel import SQLModel, select
 from sqlmodel import Session
-from fastapi import  HTTPException, Depends
-from .database import Company, Session, get_session
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, APIRouter
+from io import BytesIO
+import numpy as np
+from sqlalchemy import Table, MetaData
+from .database import Session
+from fastapi import File, UploadFile, HTTPException
 import pandas as pd
-from .database import Flow_states, Company, Executions
+
+def bulk_insert(df: pd.DataFrame, tableName: str, db: Session):
+    df = df.replace({np.nan: None})
+    listToWrite = df.to_dict(orient='records')
+    metadata = MetaData()
+    table = Table(tableName, metadata, autoload_with=db.get_bind())
+    db.exec(table.insert().values(listToWrite))
+    db.commit()
 
 
-async def db_upload_excel(file: UploadFile = File(...), db: Session = Depends(get_session)):
+async def db_upload_excel(db: Session, file: UploadFile = File(...)):
     #Validacion del archivo
     if not file.filename.endswith('.xlsx'):
         return HTTPException(status_code=400, detail="El archivo debe ser Excel")
     
-    xls = pd.ExcelFile(file.file)
+    contents = await file.read()
+    xls = pd.ExcelFile(BytesIO(contents))
     df1 = pd.read_excel(xls, 'executions')
     df2 = pd.read_excel(xls, 'flows_states')
     df3 = pd.read_excel(xls, 'company')
@@ -28,32 +36,8 @@ async def db_upload_excel(file: UploadFile = File(...), db: Session = Depends(ge
     df1["fecha_creacion"] = pd.to_datetime(df1["fecha_creacion"], errors='coerce')
     df1["fecha_termino"] = pd.to_datetime(df1["fecha_termino"], errors='coerce')
     
-    for index, row in df2.iterrows():
-        db_flowstates = Flow_states(
-            id=row["id"],
-            status=row["status"]
-            )
-        db.add(db_flowstates)
-
-    for index, row in df3.iterrows():
-        db_company = Company(
-            id=row["id"],
-            nombre=row["nombre"]
-        )
-        db.add(db_company)
-    db.commit()
-
-    for index, row in df1.iterrows():
-            db_execution = Executions(
-            id=row["id"],
-            fecha_creacion=row["fecha_creacion"],
-            fecha_termino=row["fecha_termino"] if not pd.isnull(row["fecha_termino"]) else None,
-            start_dtm=row["start_dtm"],
-            end_dtm=row["end_dtm"],
-            company_id=row["company_id"],
-            estado=row["estado"],
-            status_id=row["status_id"])
-            db.add(db_execution)
-    db.commit()
+    bulk_insert(df2, 'flow_states', db)
+    bulk_insert(df3, 'company',db)
+    bulk_insert(df1, 'executions',db)
 
     return {"message": "Datos cargados exitosamente"}
