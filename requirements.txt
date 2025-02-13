@@ -5,3 +5,7 @@ pyodbc
 pandas
 openpyxl
 python-multipart
+pyjwt
+passlib[bcrypt]
+python-dotenv
+pydantic[email]

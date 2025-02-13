@@ -82,7 +82,7 @@ def db_ranking_executions(db: Session):
     statement = (
         select(Company.nombre.label("Nombre_empresa"),func.count(Executions.estado).label("Ejecuciones_finalizadas"))
         .join(Company, Company.id == Executions.company_id)
-        .where(Executions.estado == 'finalizado')
+        .where((Executions.estado == 'finalizado')&(Executions.fecha_termino.isnot(None)))
         .group_by(Company.id, Company.nombre)
         .order_by(func.count(Executions.estado).desc())
     )
